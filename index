@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+<title>پنل DNS اختصاصی</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+  /* فونت و تنظیمات پایه */
+  * {
+    box-sizing: border-box;
+    font-family: 'Vazirmatn', sans-serif;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #0a0a0a;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05) 0, transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 0, transparent 60%);
+    color: #ddd;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: pan-x pan-y;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+zap: 20px 10px;
+  }
+
+  #container {
+    width: 100%;
+    max-width: 900px;
+    background: #121212cc;
+    border-radius: 18px;
+    box-shadow: 0 0 20px #000000bb;
+    padding: 30px 40px;
+    color: #e0e6e9;
+  }
+
+  /* پنل اصلی */
+  #mainPanel {
+    display: flex;
+    flex-direction: column;
+  }
+  #mainPanel h1 {
+    text-align: center;
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: 32px;
+    color: #1b89a6;
+    user-select: none;
+  }
+
+  /* دکمه‌ها */
+  .top-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+  .btn {
+    border: none;
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 12px transparent;
+    color: white;
+  }
+  .btn i {
+    font-size: 20px;
+  }
+
+  #newDNSBtn {
+    background: linear-gradient(135deg, #0d776f, #12b6a1);
+    box-shadow: 0 5px 20px #12b6a1aa;
+  }
+  #newDNSBtn:hover {
+    background: linear-gradient(135deg, #12b6a1, #0d776f);
+    box-shadow: 0 6px 25px #12b6a1cc;
+  }
+
+  #clearAllBtn {
+    background: linear-gradient(135deg, #b1353d, #dc4a55);
+    box-shadow: 0 5px 18px #dc4a55aa;
+  }
+  #clearAllBtn:hover {
+    background: linear-gradient(135deg, #dc4a55, #b1353d);
+    box-shadow: 0 6px 25px #dc4a55cc;
+  }
+
+  #searchInput {
+    padding: 12px 16px;
+    border-radius: 18px;
+    border: none;
+    background: #22303a;
+    color: #c8d6db;
+    font-size: 16px;
+    outline-offset: 2px;
+    outline-color: #1b89a6;
+    user-select: text;
+    transition: background-color 0.25s ease;
+    width: 260px;
+  }
+  #searchInput:focus {
+    background: #2a3a48;
+  }
+
+  /* پنجره مودال */
+  #modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+  }
+  #modal {
+    background: #1f2a38;
+    padding: 28px 32px;
+    border-radius: 20px;
+    box-shadow: 0 0 16px #12b6a1cc;
+    width: 380px;
+    max-width: 95vw;
+    color: #c1ddd8;
+  }
+  #modal h2 {
+    margin: 0 0 20px 0;
+    font-weight: 700;
+    font-size: 22px;
+    text-align: center;
+    color: #12b6a1;
+  }
+  #modal label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #9bd8cc;
+  }
+  #modal input, #modal select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: none;
+    background: #2b3d4f;
+    color: #cbd9d8;
+    font-size: 15px;
+    outline-offset: 2px;
+    outline-color: #12b6a1;
+    user-select: text;
+    margin-bottom: 20px;
+    transition: background-color 0.25s ease;
+  }
+  #modal input:focus, #modal select:focus {
+    background: #386a84;
+  }
+  #createBtn, #createWgBtn {
+    width: 100%;
+    padding: 16px 0;
+    background: linear-gradient(135deg, #0d776f, #12b6a1);
+    border: none;
+    border-radius: 18px;
+    font-weight: 700;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 6px 20px #12b6a1cc;
+    transition: background 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+  #createBtn:hover, #createWgBtn:hover {
+    background: linear-gradient(135deg, #12b6a1, #0d776f);
+    box-shadow: 0 7px 24px #12b6a1ee;
+  }
+  #createBtn i, #createWgBtn i {
+    font-size: 20px;
+  }
+
+  /* تب‌ها */
+  .tab-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    background: #2b3d4f;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #cbd9d8;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .tab-btn.active {
+    background: #12b6a1;
+    color: white;
+  }
+  .tab-btn:hover {
+    background: #386a84;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* کارت‌ها */
+  #dnsCards {
+    max-height: 58vh;
+    overflow-y: auto;
+    padding-right: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #12b6a1 transparent;
+  }
+  #dnsCards::-webkit-scrollbar {
+    width: 8px;
+  }
+  #dnsCards::-webkit-scrollbar-thumb {
+    background: #12b6a1aa;
+    border-radius: 12px;
+  }
+
+  .dnsCard, .wgCard {
+    position: relative;
+    background: #22343f;
+    border-radius: 20px;
+    padding: 26px 32px 32px;
+    box-shadow: 0 2px 14px #0c423aaa;
+    color: #cce3e0;
+    font-size: 15.5px;
+    user-select: text;
+    margin-bottom: 22px;
+  }
+  .dnsCard .cardTitle, .wgCard .cardTitle {
+    position: absolute;
+    top: 14px;
+    left: 24px;
+    font-weight: 700;
+    font-size: 19px;
+    color: #12b6a1;
+    user-select: none;
+  }
+  .ipGroup {
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 48px;
+  }
+  .ipBox {
+    flex: 1 1 22%;
+    min-width: 110px;
+    background: #2e4957;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 16px;
+    text-align: center;
+    color: #b1d7d2;
+    user-select: all;
+  }
+
+  /* دکمه‌های داخل کارت */
+  .cardButtons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 18px;
+  }
+  .cardButtons button {
+    padding: 12px 26px;
+    border-radius: 22px;
+    font-weight: 700;
+    font-size: 15.5px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: none;
+    color: white;
+    box-shadow: none;
+    transition: background 0.3s ease;
+  }
+  .cardButtons button.copyBtn {
+    background: linear-gradient(135deg, #208040, #53a76a);
+    box-shadow: 0 4px 12px #53a76aaa;
+  }
+  .cardButtons button.copyBtn:hover {
+    background: linear-gradient(135deg, #176530, #3e7d4f);
+    box-shadow: 0 6px 18px #3e7d4fcc;
+  }
+  .cardButtons button.downloadBtn {
+    background: linear-gradient(135deg, #208040, #53a76a);
+    box-shadow: 0 4px 12px #53a76aaa;
+  }
+  .cardButtons button.downloadBtn:hover {
+    background: linear-gradient(135deg, #176530, #3e7d4f);
+    box-shadow: 0 6px 18px #3e7d4fcc;
+  }
+  .cardButtons button.deleteBtn {
+    background: linear-gradient(135deg, #b43c3c, #d85a5a);
+    box-shadow: 0 4px 14px #d85a5aaa;
+  }
+  .cardButtons button.deleteBtn:hover {
+    background: linear-gradient(135deg, #912b2b, #b73c3c);
+    box-shadow: 0 6px 20px #b73c3ccc;
+  }
+  .cardButtons button i {
+    font-size: 19px;
+  }
+
+  /* ریسپانسیو */
+  @M_O_RT_EZA (max-width: 480px) {
+    #container {
+      padding: 24px 18px;
+    }
+    #mainPanel h1 {
+      font-size: 22px;
+      margin-bottom: 22px;
+    }
+    .top-buttons {
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    #searchInput {
+      width: 100%;
+      max-width: 350px;
+    }
+    #modal {
+      width: 90vw;
+      padding: 20px 22px;
+    }
+    .ipGroup {
+      flex-direction: column;
+    }
+    .ipBox {
+      width: 100%;
+      min-width: unset;
+    }
+    .cardButtons {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .cardButtons button {
+      width: 45%;
+      justify-content: center;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="container" role="main" aria-label="پنل مدیریت DNS">
+  <!-- پنل اصلی -->
+  <section id="moriPanel" aria-label="پنل اصلی">
+    <h1>سلام خوش آمدید 🌹</h1>
+
+    <div class="top-buttons" role="region" aria-label="ابزارهای اصلی پنل">
+      <input type="text" id="searchInput" placeholder="جستجو بر اساس نام..." aria-label="جستجو بر اساس نام" />
+      <button class="btn" id="clearAllBtn" title="پاک کردن همه کدها"><i class="fas fa-trash-alt"></i> پاک کردن همه</button>
+      <button class="btn" id="newDNSBtn" title="ساخت DNS/WireGuard جدید"><i class="fas fa-plus-circle"></i> NEW DNS/WireGuard</button>
+    </div>
+
+    <div id="dnsCards" aria-live="polite" aria-relevant="additions removals"></div>
+  </section>
+</div>
+
+<!-- پنجره مودال -->
+<div id="modalOverlay" tabindex="-1" aria-hidden="true">
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-tab="dnsTab">ساخت DNS</button>
+      <button class="tab-btn" data-tab="wireguardTab">ساخت WireGuard</button>
+    </div>
+
+    <!-- تب DNS -->
+    <div id="dnsTab" class="tab-content active">
+      <h2 id="modalTitle">ساخت DNS جدید</h2>
+      <label for="dnsNameInput">نام دلخواه</label>
+      <input type="text" id="dnsNameInput" placeholder="نام دلخواه خود را وارد کنید" autocomplete="off" />
+      <label for="operatorSelect">نوع اپراتور</label>
+      <select id="operatorSelect">
+        <option value="">انتخاب کنید...</option>
+        <option value="Irancell">ایرانسل</option>
+        <option value="HamrahAval">همراه اول</option>
+        <option value="WiFi">وای فای</option>
+        <option value="Rightel">رایتل</option>
+        <option value="Other">سایر...</option>
+      </select>
+      <label for="serverSelect">سرور</label>
+      <select id="serverSelect">
+        <option value="">انتخاب کنید...</option>
+        <option value="Germany">آلمان</option>
+        <option value="Emirates">امارات</option>
+        <option value="Saudi">عربستان</option>
+        <option value="Turkey">ترکیه</option>
+        <option value="Sweden">سوئد</option>
+        <option value="Bahrain">بحرین</option>
+      </select>
+      <button id="createBtn" aria-label="ساخت DNS جدید"><i class="fas fa-check-circle"></i> ساختن</button>
+    </div>
+
+    <!-- تب WireGuard -->
+    <div id="wireguardTab" class="tab-content" style="display: none;">
+      <h2>ساخت پیکربندی WireGuard</h2>
+      <label for="wgNameInput">نام پیکربندی</label>
+      <input type="text" id="wgNameInput" placeholder="نام دلخواه خود را وارد کنید" autocomplete="off" />
+      <label for="wgAddress">آدرس رابط</label>
+      <input type="text" id="wgAddress" placeholder="مثال: 10.0.0.1/24" value="10.0.0.1/24" />
+      <label for="wgDNS">DNS (اختیاری)</label>
+      <input type="text" id="wgDNS" placeholder="مثال: 1.1.1.1" />
+      <label for="wgPeerAllowedIPs">Allowed IPs</label>
+      <input type="text" id="wgPeerAllowedIPs" placeholder="مثال: 0.0.0.0/0, ::/0" value="0.0.0.0/0, ::/0" />
+      <button id="createWgBtn" aria-label="ساخت پیکربندی WireGuard"><i class="fas fa-check-circle"></i> ساختن</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // مراجع دامین و عناصر صفحه
+  const newDNSBtn = document.getElementById('newDNSBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const dnsNameInput = document.getElementById('dnsNameInput');
+  const operatorSelect = document.getElementById('operatorSelect');
+  const serverSelect = document.getElementById('serverSelect');
+  const createBtn = document.getElementById('createBtn');
+  const createWgBtn = document.getElementById('createWgBtn');
+  const dnsCardsContainer = document.getElementById('dnsCards');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const searchInput = document.getElementById('searchInput');
+
+  const STORAGE_KEY = 'dnsCardsData_v2';
+  const WG_STORAGE_KEY = 'wireguardConfigs_v1';
+
+  // نقش رنگ‌ها برای سرورها
+  const serverPatterns = {
+    Germany: '89.19.x.x',
+    Emirates: '193.123.x.x',
+    Saudi: '89.237.x.x',
+    Turkey: '85.105.x.x',
+    Sweden: '46.254.x.x',
+    Bahrain: '80.95.x.x',
+  };
+
+  // تولید کلید تصادفی برای WireGuard (شبیه Base64)
+  function generateRandomKey() {
+    return btoa(String.fromCharCode(...Array(32).fill().map(() => Math.floor(Math.random() * 256)))).slice(0, 44);
+  }
+
+  // تولید Endpoint رندوم با پورت 443
+  function generateRandomEndpoint() {
+    const ipParts = Array(4).fill().map(() => Math.floor(Math.random() * 256));
+    return `${ipParts.join('.')}:443`;
+  }
+
+  // مدیریت تب‌ها
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).style.display = 'block';
+    });
+  });
+
+  // بارگذاری کارت‌ها در شروع
+  window.addEventListener('load', () => {
+    loadDnsCards();
+    loadWireguardConfigs();
+  });
+
+  // باز کردن مودال
+  newDNSBtn.addEventListener('click', () => {
+    dnsNameInput.value = '';
+    operatorSelect.value = '';
+    serverSelect.value = '';
+    document.getElementById('wgNameInput').value = '';
+    document.getElementById('wgAddress').value = '10.0.0.1/24';
+    document.getElementById('wgDNS').value = '';
+    document.getElementById('wgPeerAllowedIPs').value = '0.0.0.0/0, ::/0';
+    modalOverlay.style.display = 'flex';
+    dnsNameInput.focus();
+  });
+
+  // بستن مودال با کلیک بیرون
+  modalOverlay.addEventListener('click', e => {
+    if (e.target === modalOverlay) {
+      modalOverlay.style.display = 'none';
+    }
+  });
+
+  // تولید آدرس IPv4 با توجه به سرور
+  function generateIPv4(pattern) {
+    let parts = pattern.split('.');
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === 'x') {
+        parts[i] = Math.floor(Math.random() * 241) + 10; // 10 تا 250
+      }
+    }
+    return parts.join('.');
+  }
+
+  // تولید آدرس IPv6 با الگوی داده شده
+  function generateIPv6(pattern) {
+    const chars = 'abcdef123456789';
+    return pattern.replace(/x/g, () => chars[Math.floor(Math.random() * chars.length)]);
+  }
+
+  // ذخیره کارت‌های DNS
+  function saveDnsCards() {
+    const cards = [];
+    dnsCardsContainer.querySelectorAll('.dnsCard').forEach(cardEl => {
+      if (!cardEl.classList.contains('wgCard')) {
+        const name = cardEl.querySelector('.cardTitle').textContent;
+        const ips = [];
+        cardEl.querySelectorAll('.ipBox').forEach(ipBox => ips.push(ipBox.textContent));
+        cards.push({ name, ips });
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  }
+
+  // بارگذاری کارت‌های DNS
+  function loadDnsCards() {
+    dnsCardsContainer.innerHTML = '';
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const cards = JSON.parse(saved);
+        cards.forEach(card => {
+          dnsCardsContainer.appendChild(createCardElement({ name: card.name, ips: card.ips }));
+        });
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }
+
+  // ذخیره کارت‌های WireGuard
+  function saveWireguardConfigs() {
+    const configs = [];
+    dnsCardsContainer.querySelectorAll('.wgCard').forEach(cardEl => {
+      const name = cardEl.querySelector('.cardTitle').textContent;
+      const config = cardEl.dataset.config;
+      configs.push({ name, config });
+    });
+    localStorage.setItem(WG_STORAGE_KEY, JSON.stringify(configs));
+  }
+
+  // بارگذاری کارت‌های WireGuard
+  function loadWireguardConfigs() {
+    const saved = localStorage.getItem(WG_STORAGE_KEY);
+    if (saved) {
+      try {
+        const configs = JSON.parse(saved);
+        configs.forEach(config => {
+          dnsCardsContainer.appendChild(createWgCardElement(config));
+        });
+      } catch {
+        localStorage.removeItem(WG_STORAGE_KEY);
+      }
+    }
+  }
+
+  // افزودن کارت DNS جدید
+  function addDnsCard(card) {
+    dnsCardsContainer.appendChild(createCardElement(card));
+  }
+
+  // حذف کارت DNS
+  function removeDnsCard(name) {
+    const cards = Array.from(dnsCardsContainer.children);
+    for (let cardEl of cards) {
+      if (cardEl.querySelector('.cardTitle').textContent === name && !cardEl.classList.contains('wgCard')) {
+        cardEl.remove();
+        break;
+      }
+    }
+    saveDnsCards();
+  }
+
+  // ساخت عنصر کارت DNS
+  function createCardElement(card) {
+    const cardEl = document.createElement('div');
+    cardEl.classList.add('dnsCard');
+
+    const titleEl = document.createElement('div');
+    titleEl.classList.add('cardTitle');
+    titleEl.textContent = card.name;
+    cardEl.appendChild(titleEl);
+
+    const ipGroup = document.createElement('div');
+    ipGroup.classList.add('ipGroup');
+
+    card.ips.forEach(ip => {
+      const ipBox = document.createElement('div');
+      ipBox.classList.add('ipBox');
+      ipBox.textContent = ip;
+      ipGroup.appendChild(ipBox);
+    });
+
+    cardEl.appendChild(ipGroup);
+
+    const btnGroup = document.createElement('div');
+    btnGroup.classList.add('cardButtons');
+
+    const copyBtn = document.createElement('button');
+    copyBtn.classList.add('copyBtn');
+    copyBtn.innerHTML = '<i class="fas fa-copy"></i> کپی';
+    copyBtn.title = 'کپی آی‌پی‌ها';
+    copyBtn.setAttribute('aria-label', 'کپی آی‌پی‌ها');
+    copyBtn.addEventListener('click', () => {
+      const textToCopy = card.ips.join('\n');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          alert('آی‌پی‌ها کپی شد!');
+        }).catch(() => {
+          fallbackCopyText(textToCopy);
+        });
+      } else {
+        fallbackCopyText(textToCopy);
+      }
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.classList.add('deleteBtn');
+    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> حذف';
+    deleteBtn.title = 'حذف کارد';
+    deleteBtn.setAttribute('aria-label', 'حذف کارد');
+    deleteBtn.addEventListener('click', () => {
+      if (confirm(`آیا از حذف "${card.name}" مطمئن هستید؟`)) {
+        removeDnsCard(card.name);
+      }
+    });
+
+    btnGroup.appendChild(copyBtn);
+    btnGroup.appendChild(deleteBtn);
+    cardEl.appendChild(btnGroup);
+
+    return cardEl;
+  }
+
+  // ساخت عنصر کارت WireGuard
+  function createWgCardElement(config) {
+    const cardEl = document.createElement('div');
+    cardEl.classList.add('dnsCard', 'wgCard');
+    cardEl.dataset.config = config.config;
+
+    const titleEl = document.createElement('div');
+    titleEl.classList.add('cardTitle');
+    titleEl.textContent = config.name;
+    cardEl.appendChild(titleEl);
+
+    const configEl = document.createElement('pre');
+    configEl.textContent = config.config;
+    configEl.style.background = '#2e4957';
+    configEl.style.borderRadius = '16px';
+    configEl.style.padding = '14px 18px';
+    configEl.style.fontFamily = 'monospace';
+    configEl.style.color = '#b1d7d2';
+    configEl.style.userSelect = 'all';
+    cardEl.appendChild(configEl);
+
+    const btnGroup = document.createElement('div');
+    btnGroup.classList.add('cardButtons');
+
+    const copyBtn = document.createElement('button');
+    copyBtn.classList.add('copyBtn');
+    copyBtn.innerHTML = '<i class="fas fa-copy"></i> کپی';
+    copyBtn.title = 'کپی پیکربندی';
+    copyBtn.setAttribute('aria-label', 'کپی پیکربندی');
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(config.config).then(() => {
+        alert('پیکربندی کپی شد!');
+      }).catch(() => {
+        fallbackCopyText(config.config);
+      });
+    });
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.cl
